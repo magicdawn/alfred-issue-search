@@ -25,6 +25,10 @@ async function main() {
     .filter((i) => {
       const searchText = alfy.input
 
+      // list all
+      if (searchText === 'ls') return true
+
+      // search
       if (i.title.indexOf(searchText) > -1) return true
     })
     .map((i) => {
