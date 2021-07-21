@@ -1,8 +1,9 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src/typings/index.d.ts", "src/**/*.ts"],
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib",
+    "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
