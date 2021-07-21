@@ -75,7 +75,10 @@ export const config: Conf
 
 export const userConfig: Map<string, string | number | boolean>
 
-export const cache: Conf
+interface Cache extends Conf {
+  set(key: string, val: unknown, options: {maxAge?: number})
+}
+export const cache: Cache
 
 export const debug: boolean
 
