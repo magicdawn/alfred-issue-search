@@ -1,45 +1,50 @@
-import os from 'os'
-import fse from 'fs-extra'
 import alfy from 'alfy'
-import {Octokit} from 'octokit'
-import EventEmitter from 'events'
-import {Issue} from './quicktype/issue'
 import ms from 'ms'
 
+import {Octokit} from 'octokit'
 const octokit = new Octokit()
 
-// const e = new EventEmitter()
-// e.on('hello', () => {
-//   console.log('world')
-// })
+import {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods'
+type Singular<T> = T extends (infer S)[] ? S : T
+type Issue = Singular<RestEndpointMethodTypes['issues']['listForRepo']['response']['data']>
 
 async function main() {
   if (['update'].includes(alfy.input)) {
     await update()
-    alfy.log('update complete')
+    alfy.output([
+      {
+        title: 'update complete',
+        icon: {
+          path: alfy.icon.like,
+        },
+      },
+    ])
     return
   }
 
   const issues = await getIssues()
   const list: alfy.OutputListItem[] = issues
-    .filter((i) => {
-      const searchText = alfy.input
-
-      // list all
-      if (searchText === 'ls') return true
-
-      // search
-      if (i.title.indexOf(searchText) > -1) return true
-    })
     .map((i) => {
       return {
         title: i.title,
-        subtitle: i.title + i.labels + i.id,
+        subtitle: `#${i.number} ${i.body_text || ''} ${i.labels.map((l) => l.name).join(',')} ${
+          i.body_text || ''
+        }`,
         arg: i.html_url,
         action: {
           url: i.url,
         },
       }
+    })
+    .filter((i) => {
+      const searchText = (alfy.input || '').toLowerCase()
+
+      // list all
+      if (searchText === 'ls') return true
+
+      // search
+      if ((i.title || '').toLowerCase().indexOf(searchText) > -1) return true
+      if ((i.subtitle || '').toLowerCase().indexOf(searchText) > -1) return true
     })
 
   if (!list.length) {
@@ -62,11 +67,11 @@ async function getIssues(): Promise<Issue[]> {
     return cachedIssues
   }
 
-  const res = await octokit.rest.issues.listForRepo({
+  const issues: Issue[] = await octokit.paginate(octokit.rest.issues.listForRepo, {
     owner: 'magicdawn',
     repo: 'magicdawn',
+    per_page: 100,
   })
-  const issues = res.data as Issue[]
 
   // persist
   alfy.cache.set(cacheKey, issues, {maxAge: ms('5d')})
