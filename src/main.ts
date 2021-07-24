@@ -34,16 +34,24 @@ async function main() {
         action: {
           url: i.url,
         },
+        icon: {
+          path: alfy.icon.like,
+        },
       }
     })
     .filter((i) => {
       const searchText = (alfy.input || '').toLowerCase()
-
       // list all
       if (searchText === 'ls') return true
 
-      // search
+      /**
+       * search
+       */
+
+      // by title
       if ((i.title || '').toLowerCase().indexOf(searchText) > -1) return true
+
+      // by subtitle
       if ((i.subtitle || '').toLowerCase().indexOf(searchText) > -1) return true
     })
 
