@@ -41,6 +41,7 @@ async function main() {
     })
     .filter((i) => {
       const searchText = (alfy.input || '').toLowerCase()
+
       // list all
       if (searchText === 'ls') return true
 
